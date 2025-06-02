@@ -14,8 +14,11 @@ function App() {
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
   const [digest, setDigest] = useState("");
   const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleTransfer = () => {
+    setLoading(true);
     const transaction = new Transaction();
     const amountInMist = BigInt(Math.floor(parseFloat(amount) * 1_000_000_000));
     transaction.transferObjects(
@@ -33,9 +36,13 @@ function App() {
           console.log("Transfer successful:", result);
           setDigest(result.digest);
           setAmount("");
+          setError("");
+          setLoading(false);
         },
         onError: (error) => {
           console.error("Transfer failed:", error);
+          setError("Error in transaction");
+          setLoading(false);
         },
       }
     );
@@ -78,10 +85,10 @@ function App() {
           </div>
           <button
             onClick={handleTransfer}
-            disabled={!amount}
-            className="w-full p-3 rounded font-medium transition-colors bg-blue-500 text-white cursor-pointer"
+            disabled={!amount || loading}
+            className="w-full p-3 rounded font-medium transition-colors bg-blue-500 text-white cursor-pointer disabled:cursor-not-allowed"
           >
-            Transfer SUI
+            {loading ? "Transferring..." : "Transfer SUI"}
           </button>
           {digest && (
             <div className="mt-1">
@@ -98,6 +105,16 @@ function App() {
                 >
                   View on Sui Explorer
                 </a>
+              </div>
+            </div>
+          )}
+          {error && (
+            <div className="mt-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Transaction Error
+              </label>
+              <div className="p-3 bg-red-100 rounded">
+                <p className="text-sm text-red-800 break-all">{error}</p>
               </div>
             </div>
           )}
